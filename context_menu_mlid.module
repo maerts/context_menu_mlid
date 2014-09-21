@@ -1,0 +1,53 @@
+<?php
+/**
+ * @file: The needed plugins to hook into the context system.
+ */
+
+/**
+ * Implements hook_context_plugins().
+ */
+function context_menu_mlid_context_plugins() {
+  $plugins = array();
+  $plugins['context_menu_mlid'] = array(
+    'handler' => array(
+      'path' => drupal_get_path('module', 'context_menu_mlid'),
+      'file' => 'context_menu_mlid.context.inc',
+      'class' => 'context_menu_mlid_reaction_menu_mlid',
+      'parent' => 'context_reaction',
+    ),
+  );
+  return $plugins;
+}
+
+/**
+ * Implements hook_context_registry().
+ */
+function context_menu_mlid_context_registry() {
+  return array(
+    'reactions' => array(
+      'menu_mlid' => array(
+        'title' => t('Menu by Mlid'),
+        'plugin' => 'context_menu_mlid',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_preprocess_menu_link().
+ *
+ * This allows menus that are not primary/secondary menus to get
+ * the "active" class assigned to them. This assumes they are using
+ * theme('menu_link') for the menu rendering to html.
+ */
+function context_menu_mlid_preprocess_menu_link(&$variables) {
+  if ($contexts = context_active_contexts()) {
+    foreach ($contexts as $context) {
+      if ((isset($context->reactions['menu_mlid']))) {
+        if ($variables['element']['#original_link']['mlid'] == $context->reactions['menu_mlid']) {
+          $variables['element']['#localized_options']['attributes']['class'][] = "active";
+        }
+      }
+    }
+  }
+}
